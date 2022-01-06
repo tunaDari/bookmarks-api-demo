@@ -1,5 +1,3 @@
-from sys import breakpointhook
-from threading import current_thread
 from flask import Blueprint, request
 from flask.json import jsonify
 from flask_jwt_extended import get_jwt_identity
@@ -43,10 +41,14 @@ def handle_bookmarks():
         }),HTTP_201_CREATED
 
     else:
-        bookmarks = Bookmark.query.filter_by(user_id=current_user)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 5, type=int)
+
+        bookmarks = Bookmark.query.filter_by(user_id=current_user).\
+                                   paginate(page=page, per_page=per_page) 
         data = []
 
-        for bookmark in bookmarks:
+        for bookmark in bookmarks.items:
             data.append({
             'id': bookmark.id,
             'url': bookmark.url,
@@ -57,4 +59,13 @@ def handle_bookmarks():
             'updated_at': bookmark.updated_at
         })
 
-        return jsonify({'data': data}), HTTP_200_OK
+        meta = {
+            'page': bookmarks.page,
+            'per_page': bookmarks.per_page,
+            'total_count': bookmarks.total,
+            'prev_page': bookmarks.prev_num,
+            'next_page': bookmarks.next_num,
+            'has_next': bookmarks.has_next,
+            'has_prev': bookmarks.has_prev
+        }
+        return jsonify({'data': data, 'meta': meta}), HTTP_200_OK
