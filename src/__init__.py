@@ -46,15 +46,7 @@ def create_app(test_config=None):
     @app.errorhandler(HTTP_500_INTERNAL_SERVER_ERROR)
     def handle_500(e):
         return jsonify({'error': 'Something went wrong, we are working on it'}), HTTP_500_INTERNAL_SERVER_ERROR
-
-    @app.get("/")
-    def index():
-        return "Hello World!"
-    
-    @app.get("/hello")
-    def say_hello():
-        return {"message": "Hello World"}
-    
+          
     return app
 
 
